@@ -1,0 +1,235 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); 
+
+const int BTN_UP   = A1;
+const int BTN_DOWN = A2;
+
+int carLane = 0;       // 0..2
+int viewTopLane = 0;   // 0->показывает (0,1), 1->(1,2)
+
+unsigned long score = 0;
+bool gameOver = false;
+
+// скорость движения камней
+unsigned long tickMs = 200;
+unsigned long lastTick = 0;
+
+// частота спавна
+unsigned long spawnEveryMs = 650;
+unsigned long lastSpawn = 0;
+
+// антидребезг
+unsigned long lastBtnMs = 0;
+const unsigned long debounceMs = 120;
+
+// ====== до 3 камней одновременно ======
+const int MAX_ROCKS = 3;
+struct Rock {
+  bool active;
+  int lane; // 0..2
+  int x;    // 15..0
+};
+Rock rocks[MAX_ROCKS];
+
+byte carChar[8] = {
+  B00100, B01110, B11111, B10101, B11111, B01110, B01010, B00000
+};
+
+byte rockChar[8] = {
+  B00000, B00100, B01110, B11111, B11111, B01110, B00100, B00000
+};
+
+bool pressed(int pin) { return digitalRead(pin) == LOW; }
+
+void ensureCarVisible() {
+  if (carLane == 0) viewTopLane = 0;
+  else if (carLane == 2) viewTopLane = 1;
+}
+
+void resetGame() {
+  gameOver = false;
+  score = 0;
+  carLane = 0;
+  viewTopLane = 0;
+
+  tickMs = 200;
+  spawnEveryMs = 650;
+
+  for (int i = 0; i < MAX_ROCKS; i++) {
+    rocks[i].active = false;
+    rocks[i].lane = 0;
+    rocks[i].x = 15;
+  }
+
+  lcd.clear();
+}
+
+bool slotFreeAt(int lane, int x) {
+  for (int i = 0; i < MAX_ROCKS; i++) {
+    if (rocks[i].active && rocks[i].lane == lane && rocks[i].x == x) return false;
+  }
+  return true;
+}
+
+void trySpawnRock() {
+  // находим свободный слот
+  int idx = -1;
+  for (int i = 0; i < MAX_ROCKS; i++) {
+    if (!rocks[i].active) { idx = i; break; }
+  }
+  if (idx == -1) return; // все заняты
+
+  // пробуем выбрать полосу, где справа (x=15) свободно
+  for (int attempt = 0; attempt < 6; attempt++) {
+    int lane = random(0, 3);
+    if (slotFreeAt(lane, 15)) {
+      rocks[idx].active = true;
+      rocks[idx].lane = lane;
+      rocks[idx].x = 15;
+      return;
+    }
+  }
+  // если не нашли — не спавним
+}
+
+void draw() {
+  lcd.clear();
+
+  int laneTop = viewTopLane;
+  int laneBottom = viewTopLane + 1;
+
+  // машинка
+  if (carLane == laneTop) {
+    lcd.setCursor(0, 0);
+    lcd.write(byte(0));
+  } else if (carLane == laneBottom) {
+    lcd.setCursor(0, 1);
+    lcd.write(byte(0));
+  }
+
+  // камни
+  for (int i = 0; i < MAX_ROCKS; i++) {
+    if (!rocks[i].active) continue;
+
+    if (rocks[i].lane == laneTop) {
+      lcd.setCursor(rocks[i].x, 0);
+      lcd.write(byte(1));
+    } else if (rocks[i].lane == laneBottom) {
+      lcd.setCursor(rocks[i].x, 1);
+      lcd.write(byte(1));
+    }
+  }
+
+  // счёт
+  lcd.setCursor(12, 0);
+  lcd.print(score);
+}
+
+void showGameOver() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("GAME OVER");
+  lcd.setCursor(0, 1);
+  lcd.print("Score:");
+  lcd.print(score);
+}
+
+void handleInput() {
+  unsigned long now = millis();
+  if (now - lastBtnMs < debounceMs) return;
+
+  if (!gameOver) {
+    if (pressed(BTN_UP)) {
+      if (carLane > 0) carLane--;
+      ensureCarVisible();
+      lastBtnMs = now;
+      draw();
+    } else if (pressed(BTN_DOWN)) {
+      if (carLane < 2) carLane++;
+      ensureCarVisible();
+      lastBtnMs = now;
+      draw();
+    }
+  } else {
+    if (pressed(BTN_UP) || pressed(BTN_DOWN)) {
+      resetGame();
+      draw();
+      lastBtnMs = now;
+    }
+  }
+}
+
+void updateDifficulty() {
+  // тут можно изменить скорость двидения и количество тиков(спавна обьектов)
+  if (tickMs > 90 && score % 8 == 0) tickMs -= 5;
+  if (spawnEveryMs > 250 && score % 8 == 0) spawnEveryMs -= 15;
+}
+
+void updateGame() {
+  unsigned long now = millis();
+  if (gameOver) return;
+
+  // спавн по таймеру, независимо от движения
+  if (now - lastSpawn >= spawnEveryMs) {
+    lastSpawn = now;
+    trySpawnRock();
+    draw();
+  }
+
+  // движение по тику
+  if (now - lastTick < tickMs) return;
+  lastTick = now;
+
+  // двигаем все камни
+  for (int i = 0; i < MAX_ROCKS; i++) {
+    if (!rocks[i].active) continue;
+
+    // проверка столкновения, когда камень на x=0
+    if (rocks[i].x == 0) {
+      if (rocks[i].lane == carLane) {
+        gameOver = true;
+        showGameOver();
+        return;
+      } else {
+        // пролетел мимо
+        rocks[i].active = false;
+        score++;
+        updateDifficulty();
+        continue;
+      }
+    }
+
+    rocks[i].x--;
+  }
+
+  draw();
+}
+
+void setup() {
+  randomSeed(analogRead(A0));
+
+  pinMode(BTN_UP, INPUT_PULLUP);
+  pinMode(BTN_DOWN, INPUT_PULLUP);
+
+  lcd.init();
+  lcd.backlight();
+  lcd.createChar(0, carChar);
+  lcd.createChar(1, rockChar);
+
+  resetGame();
+
+  lcd.setCursor(0, 0);
+  lcd.print("Car Game");
+  lcd.setCursor(0, 1);
+  lcd.print("UP/DOWN A1/A2");
+  delay(700);
+
+  draw();
+}
+
+void loop() {
+  handleInput();
+  updateGame();
+}
