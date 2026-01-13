@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Arduino Car Game</title>
-  <meta name="description" content="Arduino Car Game — a simple Arduino project with 2-button control and an LCD display." />
 
   <style>
     :root{
@@ -16,7 +15,6 @@
       --accent:#58a6ff;
       --radius:14px;
       --max: 980px;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
     }
 
     *{ box-sizing:border-box; }
@@ -35,447 +33,290 @@
       padding: 0 18px;
     }
 
-    /* Top navigation */
-    header.topbar{
+    header{
       position: sticky;
       top: 0;
-      z-index: 1000;
-      background: rgba(13,17,23,.92);
-      backdrop-filter: blur(8px);
+      background: rgba(13,17,23,.95);
       border-bottom: 1px solid var(--line);
+      z-index: 1000;
     }
 
-    .topbar-inner{
+    .header-inner{
       display:flex;
-      align-items:center;
       justify-content:space-between;
-      padding: 12px 0;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .brand{
-      display:flex;
       align-items:center;
-      gap:10px;
-    }
-
-    .brand-badge{
-      width:34px;
-      height:34px;
-      border-radius: 10px;
-      border: 1px solid rgba(88,166,255,.35);
-      background: linear-gradient(135deg, rgba(88,166,255,.25), rgba(88,166,255,.06));
-      display:grid;
-      place-items:center;
-      color: var(--accent);
-      font-weight: 700;
-      letter-spacing: .5px;
-      flex: 0 0 auto;
-    }
-
-    .brand-text{
-      display:flex;
-      flex-direction:column;
-      line-height:1.1;
-    }
-    .brand-text strong{ color:#e6edf3; }
-    .brand-text span{ color: var(--muted); font-size: 12px; }
-
-    nav.nav{
-      display:flex;
-      gap: 10px;
+      padding: 12px 0;
       flex-wrap: wrap;
-      justify-content:flex-end;
     }
 
-    nav.nav a{
+    .title{
+      font-weight:700;
+      color: var(--accent);
+      letter-spacing:.5px;
+    }
+
+    nav a{
       color: var(--text);
       text-decoration:none;
+      margin-left: 12px;
       font-size: 14px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid transparent;
-    }
-    nav.nav a:hover{
-      background: rgba(255,255,255,.03);
-      border-color: var(--line);
     }
 
-    /* Cards + sections */
-    .hero{
-      padding: 26px 0 10px 0;
+    nav a:hover{
+      color: var(--accent);
+    }
+
+    section{
+      padding: 24px 0;
     }
 
     .card{
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       padding: 18px;
     }
 
-    .hero h1{
-      margin: 0 0 6px 0;
+    h1, h2{
       color: var(--accent);
-      letter-spacing: .6px;
+      margin-top: 0;
     }
 
-    .meta{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items:center;
-    }
-    .chip{
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      color: var(--muted);
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
-    .chip a{
-      color: var(--accent);
-      text-decoration:none;
-    }
-    .chip a:hover{ text-decoration: underline; }
-
-    section{ padding: 22px 0; }
-    h2{
-      margin: 0 0 10px 0;
-      color: var(--accent);
-    }
-    .rule{
-      height: 1px;
+    hr{
+      border:0;
+      height:1px;
       background: var(--line);
-      border: 0;
       margin: 10px 0 14px 0;
     }
 
     .two-col{
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 12px;
-      align-items:start;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 16px;
     }
-    @media (max-width: 860px){
+
+    @media (max-width: 800px){
       .two-col{ grid-template-columns: 1fr; }
     }
 
-    .muted{ color: var(--muted); }
-
-    /* Overview: university icon placeholder */
-    .uni{
-      display:flex;
-      gap: 14px;
-      align-items:flex-start;
-    }
     .uni-logo{
-      width: 92px;
-      height: 92px;
-      border-radius: 14px;
-      border: 1px dashed rgba(201,209,217,.35);
-      background: rgba(255,255,255,.02);
-      display:grid;
-      place-items:center;
+      width: 90px;
+      height: 90px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
       overflow:hidden;
-      flex: 0 0 auto;
-    }
-    .uni-logo img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display:block;
     }
 
-    /* Photos grid */
+    .uni-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    ul{
+      margin: 8px 0 0 18px;
+    }
+
     .grid{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3,1fr);
       gap: 12px;
     }
-    @media (max-width: 860px){
-      .grid{ grid-template-columns: repeat(2, 1fr); }
+
+    @media (max-width: 800px){
+      .grid{ grid-template-columns: repeat(2,1fr); }
     }
-    @media (max-width: 520px){
+    @media (max-width: 500px){
       .grid{ grid-template-columns: 1fr; }
     }
 
-    .ph{
+    .photo{
       border: 1px solid var(--line);
       border-radius: 12px;
       overflow:hidden;
-      background: rgba(255,255,255,.02);
     }
-    .ph img{
+
+    .photo img{
       width:100%;
-      height: 220px;
-      object-fit: cover;
+      height:220px;
+      object-fit:cover;
       display:block;
     }
-    .ph .cap{
-      padding: 10px 10px 12px 10px;
+
+    .caption{
+      padding: 8px;
       font-size: 13px;
       color: var(--muted);
     }
 
-    /* Lists and code */
-    ul{ margin: 8px 0 0 18px; }
-    li{ margin: 6px 0; }
-
-    code{
-      background:#0b1220;
-      border:1px solid var(--line);
-      border-radius: 10px;
-      padding: 2px 6px;
-      color:#e6edf3;
-    }
-
-    .links a{
+    a{
       color: var(--accent);
-      text-decoration: none;
+      text-decoration:none;
     }
-    .links a:hover{ text-decoration: underline; }
 
-    /* Timeline */
+    a:hover{
+      text-decoration: underline;
+    }
+
     .timeline{
       list-style:none;
-      padding-left: 0;
-      margin: 0;
+      padding:0;
+      margin:0;
     }
+
     .timeline li{
       padding: 10px 0;
-      border-bottom: 1px dashed rgba(48,54,61,.75);
+      border-bottom: 1px dashed var(--line);
     }
-    .timeline li:last-child{ border-bottom: 0; }
+
+    .timeline li:last-child{
+      border-bottom:none;
+    }
+
     .date{
-      display:inline-block;
-      min-width: 120px;
+      font-weight:700;
+      margin-right: 10px;
       color:#e6edf3;
-      font-weight: 700;
     }
 
     footer{
       border-top: 1px solid var(--line);
-      padding: 18px 0 26px 0;
+      padding: 20px 0;
       color: var(--muted);
       font-size: 13px;
+      text-align:center;
     }
   </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="wrap">
-      <div class="topbar-inner">
-        <div class="brand">
-          <div class="brand-badge">AG</div>
-          <div class="brand-text">
-            <strong>Arduino Car Game</strong>
-            <span>Project page</span>
-          </div>
-        </div>
 
-        <nav class="nav">
-          <a href="#overview">Overview</a>
-          <a href="#photos">Photos</a>
-          <a href="#hardware">Hardware</a>
-          <a href="#software">Software</a>
-          <a href="#timeline">Timeline</a>
-        </nav>
-      </div>
-    </div>
-  </header>
+<header>
+  <div class="wrap header-inner">
+    <div class="title">Arduino Car Game</div>
+    <nav>
+      <a href="#overview">Overview</a>
+      <a href="#photos">Photos</a>
+      <a href="#hardware">Hardware</a>
+      <a href="#software">Software</a>
+      <a href="#timeline">Timeline</a>
+    </nav>
+  </div>
+</header>
 
-  <main class="wrap">
-    <!-- HERO -->
-    <div class="hero">
-      <div class="card">
-        <h1>ARDUINO CAR GAME</h1>
-        <p>
-          A simple Arduino game controlled by two buttons. Move the car up or down to avoid obstacles.
-          Collision ends the game.
-        </p>
+<main class="wrap">
 
-        <div class="meta">
-          <div class="chip">Platform: Arduino</div>
-          <div class="chip">Input: 2 buttons</div>
-          <div class="chip">Display: LCD 1602</div>
-        </div>
-      </div>
-    </div>
+  <!-- OVERVIEW -->
+  <section id="overview">
+    <div class="card">
+      <h1>Overview</h1>
+      <hr>
 
-    <!-- OVERVIEW -->
-    <section id="overview">
-      <div class="card">
-        <h2>Overview</h2>
-        <hr class="rule" />
+      <div class="two-col">
+        <div>
+          <p>
+            <strong>Arduino Car Game</strong> is a simple Arduino-based game controlled by two buttons.
+            The player moves a car up or down to avoid obstacles displayed on an LCD screen.
+          </p>
 
-        <div class="two-col">
-          <div>
-            <div class="uni">
-              <div class="uni-logo">
-                <!-- Put your university icon here (example file: assets/university.png) -->
-                <img src="assets/university.png" alt="University logo (replace this image)" onerror="this.remove(); this.parentElement.textContent='University icon';" />
-              </div>
-              <div>
-                <p style="margin-top:0;">
-                  This page presents my Arduino project: <strong>Arduino Car Game</strong>.
-                  The goal is to practice embedded programming, input handling, and simple game state logic.
-                </p>
-                <p class="muted" style="margin-bottom:0;">
-                  Replace the university icon by uploading <code>assets/university.png</code>.
-                </p>
-              </div>
-            </div>
-
-            <ul>
-              <li>Start the game with the buttons</li>
-              <li>Move the car up/down</li>
-              <li>Avoid obstacles</li>
-              <li>Collision = <strong>Game Over</strong></li>
-            </ul>
-          </div>
-
-          <div>
-            <p class="muted" style="margin-top:0;">
-              Optional notes you can add later:
-            </p>
-            <ul>
-              <li>Score system / difficulty levels</li>
-              <li>Testing results</li>
-              <li>Future improvements</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PHOTOS -->
-    <section id="photos">
-      <div class="card">
-        <h2>Photos</h2>
-        <hr class="rule" />
-        <p class="muted">
-          Upload three images into <code>assets/</code> and keep these filenames, or change them here:
-          <code>photo1.jpg</code>, <code>photo2.jpg</code>, <code>photo3.jpg</code>.
-        </p>
-
-        <div class="grid" style="margin-top:12px;">
-          <div class="ph">
-            <img src="assets/photo1.jpg" alt="Project photo 1">
-            <div class="cap">Photo 1 — project overview</div>
-          </div>
-          <div class="ph">
-            <img src="assets/photo2.jpg" alt="Project photo 2">
-            <div class="cap">Photo 2 — wiring / buttons</div>
-          </div>
-          <div class="ph">
-            <img src="assets/photo3.jpg" alt="Project photo 3">
-            <div class="cap">Photo 3 — gameplay / display</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- HARDWARE -->
-    <section id="hardware">
-      <div class="card">
-        <h2>Hardware</h2>
-        <hr class="rule" />
-
-        <div class="two-col">
-          <div>
-            <p style="margin-top:0;"><strong>Components</strong></p>
-            <ul>
-              <li>Arduino Uno (or compatible board)</li>
-              <li>LCD 1602 display</li>
-              <li>2 buttons (L / R)</li>
-              <li>3 LEDs (green, red, yellow)</li>
-              <li>Resistors, wires, breadboard (optional)</li>
-            </ul>
-
-            <p style="margin-top:14px;"><strong>Notes</strong></p>
-            <p class="muted" style="margin-bottom:0;">
-              If you want, we can later replace this with exact pin mapping from your Wokwi <code>diagram.json</code>.
-            </p>
-          </div>
-
-          <div>
-            <p style="margin-top:0;"><strong>Wiring diagram</strong></p>
-            <p class="muted">
-              Upload a diagram image like <code>assets/wiring.png</code> (optional), or keep only the link in Software.
-            </p>
-            <div class="ph">
-              <img src="assets/wiring.png" alt="Wiring diagram (optional)">
-              <div class="cap">Wiring diagram — optional image</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SOFTWARE -->
-    <section id="software">
-      <div class="card">
-        <h2>Software</h2>
-        <hr class="rule" />
-
-        <p style="margin-top:0;">
-          Firmware is written in Arduino C/C++. Below are quick links to the code and to the circuit diagram.
-        </p>
-
-        <div class="links">
           <ul>
-            <li>
-              <strong>Project code:</strong>
-              <a href="https://github.com/Mishaaaab/arduino-car-game" target="_blank" rel="noopener">
-                GitHub repository
-              </a>
-            </li>
-            <li>
-              <strong>Diagram:</strong>
-              <!-- If your diagram is in a repo folder named "diagram", this will work -->
-              <a href="diagram" target="_blank" rel="noopener">
-                Open diagram folder
-              </a>
-              <span class="muted">(or replace with a Wokwi link)</span>
-            </li>
+            <li>Two-button control</li>
+            <li>LCD 1602 display</li>
+            <li>Obstacle avoidance gameplay</li>
+            <li>Game Over on collision</li>
           </ul>
         </div>
 
-        <p class="muted" style="margin-bottom:0;">
-          Tip: If you have a Wokwi simulation link, replace the diagram link with it.
-        </p>
+        <div class="uni-logo">
+          <img src="assets/university.png" alt="University logo">
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- TIMELINE -->
-    <section id="timeline">
-      <div class="card">
-        <h2>Timeline</h2>
-        <hr class="rule" />
+  <!-- PHOTOS -->
+  <section id="photos">
+    <div class="card">
+      <h2>Photos</h2>
+      <hr>
 
-        <ul class="timeline">
-          <li><span class="date">26.12.2025</span> Started the project, defined requirements and game rules</li>
-          <li><span class="date">28.12.2025</span> Assembled the circuit and connected LCD + buttons</li>
-          <li><span class="date">02.01.2026</span> Implemented movement logic and obstacle generation</li>
-          <li><span class="date">06.01.2026</span> Tested gameplay, fixed bugs, adjusted timing / difficulty</li>
-          <li><span class="date">13.01.2026</span> Published the project page on GitHub Pages</li>
-        </ul>
-
-        <p class="muted" style="margin-top:12px;margin-bottom:0;">
-          You can edit these entries anytime to match your real progress.
-        </p>
+      <div class="grid">
+        <div class="photo">
+          <img src="assets/photo1.jpg" alt="Project photo 1">
+          <div class="caption">Project overview</div>
+        </div>
+        <div class="photo">
+          <img src="assets/photo2.jpg" alt="Project photo 2">
+          <div class="caption">Wiring and buttons</div>
+        </div>
+        <div class="photo">
+          <img src="assets/photo3.jpg" alt="Project photo 3">
+          <div class="caption">Gameplay on LCD</div>
+        </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <footer>
-      <div>© 2026 Arduino Car Game</div>
-      <div class="muted">Made for GitHub Pages</div>
-    </footer>
-  </main>
+  <!-- HARDWARE -->
+  <section id="hardware">
+    <div class="card">
+      <h2>Hardware</h2>
+      <hr>
+
+      <ul>
+        <li>Arduino Uno</li>
+        <li>LCD 1602 display</li>
+        <li>2 push buttons</li>
+        <li>3 LEDs</li>
+        <li>Resistors, wires, breadboard</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SOFTWARE -->
+  <section id="software">
+    <div class="card">
+      <h2>Software</h2>
+      <hr>
+
+      <ul>
+        <li>
+          Project code:
+          <a href="https://github.com/Mishaaaab/arduino-car-game" target="_blank">
+            GitHub repository
+          </a>
+        </li>
+        <li>
+          Circuit diagram:
+          <a href="https://github.com/Mishaaaab/arduino-car-game/blob/main/diagram" target="_blank">
+            View diagram
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TIMELINE -->
+  <section id="timeline">
+    <div class="card">
+      <h2>Timeline</h2>
+      <hr>
+
+      <ul class="timeline">
+        <li><span class="date">26.12.2025</span> Project started</li>
+        <li><span class="date">28.12.2025</span> Hardware assembled</li>
+        <li><span class="date">02.01.2026</span> Game logic implemented</li>
+        <li><span class="date">06.01.2026</span> Testing and bug fixing</li>
+        <li><span class="date">13.01.2026</span> Project published</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Arduino Car Game
+  </footer>
+
+</main>
+
 </body>
 </html>
